@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model permission_lists {
+  permission_id    String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  permission_name  String?            @db.VarChar(255)
+  roles_permission roles_permission[]
+}
+
+model roles_lists {
+  role_id          String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  role_name        String?            @db.VarChar(255)
+  roles_permission roles_permission[]
+  users_roles      users_roles[]
+}
+
+model roles_permission {
+  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  role_id          String?           @db.Uuid
+  permission_id    String?           @db.Uuid
+  permission_lists permission_lists? @relation(fields: [permission_id], references: [permission_id], onDelete: NoAction, onUpdate: NoAction)
+  roles_lists      roles_lists?      @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  user_id        String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  username       String?       @db.VarChar(255)
+  password       String?       @db.VarChar(255)
+  account_status String?       @db.VarChar(255)
+  google_iud     String?       @db.VarChar(255)
+  org_email      String?       @db.VarChar(255)
+  alt_email      String?       @db.VarChar(255)
+  fname          String?       @db.VarChar(255)
+  sname          String?       @db.VarChar(255)
+  nickname       String?       @db.VarChar(255)
+  birthday       DateTime?     @db.Date
+  booking        booking[]
+  user_org       user_org?
+  users_roles    users_roles[]
+}
+
+model users_roles {
+  id          String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id     String?      @db.Uuid
+  role_id     String?      @db.Uuid
+  roles_lists roles_lists? @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+  users       users?       @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model booking {
+  id              String           @id(map: "booking_pkey1") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  booking_id      String?          @db.Uuid
+  user_id         String?          @db.Uuid
+  booking_details booking_details? @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ticket          ticket           @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users?           @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model booking_details {
+  id                                                      String        @id(map: "booking_pkey") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  booking                                                 String?       @db.VarChar(255)
+  time_start                                              DateTime?     @db.Date
+  time_end                                                DateTime?     @db.Date
+  booking_type                                            String?       @db.Uuid
+  area_id                                                 String?       @db.Uuid
+  bookings                                                booking[]
+  booking_type_booking_details_booking_typeTobooking_type booking_type? @relation("booking_details_booking_typeTobooking_type", fields: [booking_type], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model main_room {
+  id        String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  room_name String?    @db.VarChar(255)
+  sub_room  sub_room[]
+}
+
+model seat {
+  id       String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  seat     String? @db.VarChar(255)
+  table_id String? @db.Uuid
+  table    table?  @relation(fields: [table_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model sub_room {
+  id            String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  room_sub_name String?    @db.VarChar(255)
+  room_id       String?    @db.Uuid
+  main_room     main_room? @relation(fields: [room_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  table         table[]
+}
+
+model table {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  table_name  String?   @db.VarChar(255)
+  sub_room_id String?   @db.Uuid
+  seat        seat[]
+  sub_room    sub_room? @relation(fields: [sub_room_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model booking_type {
+  id                                                         String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  booking_type_name                                          String?           @db.VarChar(255)
+  area_type                                                  Int?
+  minimum_amount                                             Int?
+  booking_details_booking_details_booking_typeTobooking_type booking_details[] @relation("booking_details_booking_typeTobooking_type")
+}
+
+model curriculum {
+  id                                       String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  curriculum                               String?    @db.VarChar(255)
+  major_id                                 String?    @db.Uuid
+  major                                    major?     @relation(fields: [major_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_org_user_org_curriculumTocurriculum user_org[] @relation("user_org_curriculumTocurriculum")
+}
+
+model faculty {
+  id           String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  faculty_name String? @db.VarChar(255)
+  major        major[]
+}
+
+model major {
+  id         String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  major      String?      @db.VarChar(255)
+  faculty_id String?      @db.Uuid
+  curriculum curriculum[]
+  faculty    faculty?     @relation(fields: [faculty_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model ticket {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  booking_id String?   @db.Uuid
+  created_at DateTime? @db.Timestamp(6)
+  expired_at DateTime? @db.Timestamp(6)
+  booking    booking?
+}
+
+model user_org {
+  user_id                                    String      @id @db.Uuid
+  year_id                                    Int?
+  curriculum                                 String?     @db.Uuid
+  curriculum_user_org_curriculumTocurriculum curriculum? @relation("user_org_curriculumTocurriculum", fields: [curriculum], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                                      users       @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
