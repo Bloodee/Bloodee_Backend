@@ -1,6 +1,10 @@
 const { PrismaClient } = require('@prisma/client')
 const config = require("../config/auth.config");
-const prisma = new PrismaClient()
+const prisma = new PrismaClient(
+    {
+        log: ['query', 'info', 'warn', 'error'],
+    }
+)
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -11,110 +15,69 @@ var bcrypt = require("bcryptjs");
 // }
 
 
-exports.signup = (req, res) => {
+exports.signup = async (req, res) => {
     // check if username already exist
-    prisma.users.findFirst({
+    const { username, password } = req.body;
+    const user = await prisma.user.findFirst({
         where: {
-            username: req.body.username
-        },
-    }).then((user) => {
-        if (user) {
-            res.status(400).send({
-                status: false,
-                message: "Username already exist"
-            })
-        } else {
-            var password = bcrypt.hashSync(req.body.password, 12);
-            prisma.users.create({
-                data: {
-                    username: req.body.username,
-                    password: password,
-                    account_status: "active",
-                }
-            }).then((user) => {
-                res.send({ user: user, status: true, message: "User created successfully" })
-            })
+            username: username
         }
     })
+
+    if (user) {
+        return res.status(200).send({ status: false, message: "Username already exist" });
+    }
+    else {
+        // create user
+        const user = await prisma.user.create({
+            data: {
+                username: username,
+                password: bcrypt.hashSync(password, 8),
+            }
+        })
+        res.status(200).send({
+            status: true,
+            message: "User created successfully",
+            user: user
+        })
+    }
 }
 
-
-// signin body :{
-//     "username": "Tests",
-//     "password" : "123456789"
-// }
-exports.signin = (req, res) => {
+exports.signin = async (req, res) => {
     // check if username already exist
-    prisma.users.findFirst({
-        select: {
-            user_id: true,
-            username: true,
-            account_status: true,
-            password: true,
-            org_email: true,
-            users_roles: {
-                select: {
-                    roles_lists: {
-                        select: {
-                            roles_permission: {
-                                select: {
-                                    permission_lists: {
-                                        select: {
-                                            permission_name: true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
+    const { username, password } = req.body;
+    const user = await prisma.user.findFirst({
         where: {
-            username: req.body.username
-        },
-    }).then((user) => {
-        if (!user) {
-            return res.status(200).send({ status: false, message: "User Not found." });
+            username: username
         }
-
-        var passwordIsValid = bcrypt.compareSync(
-            req.body.password,
+    })
+    if (user) {
+        const passwordIsValid = bcrypt.compareSync(
+            password,
             user.password
         );
 
         if (!passwordIsValid) {
             return res.status(200).send({
                 status: false,
-                message: "Invalid Password!",
+                accessToken: null,
+                message: "Invalid Password!"
             });
         }
 
-        var token = jwt.sign({ id: user.user_id }, config.secret, {
-            expiresIn: 604800, // 7 days
+        const token = jwt.sign({ id: user.id }, config.secret, {
+            expiresIn: 86400 // 24 hours
         });
-
-        delete user.password;
-
-        // join all user.users_roles.roles_lists.roles_permission.permission_lists
-        var permission = [];
-        user.users_roles.map((user_roles) => {
-            user_roles.roles_lists.roles_permission.map((roles_permission) => {
-                permission.push(roles_permission.permission_lists.permission_name)
-            })
-        })
-        // remove duplicate permission
-        permission = [...new Set(permission)];
-        user.permission_list = permission;
-        delete user.users_roles;
 
         res.status(200).send({
             status: true,
-            message: "Login Success",
-            token: token,
-            user: user
+            id: user.id,
+            username: user.username,
+            accessToken: token
         });
-    })
+    } else {
+        return res.status(200).send({ status: false, message: "User not found" });
+    }
 }
 
 

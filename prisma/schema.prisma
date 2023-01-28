@@ -3,147 +3,184 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model permission_lists {
-  permission_id    String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  permission_name  String?            @db.VarChar(255)
-  roles_permission roles_permission[]
+model alert {
+  id                Int     @id
+  alert_title       String? @map("alert title") @db.VarChar(255)
+  alert_description String? @map("alert description") @db.Text
+  node_id           Int?
+  node              node?   @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "alert_ibfk_1")
+
+  @@index([node_id], map: "node_id")
 }
 
-model roles_lists {
-  role_id          String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  role_name        String?            @db.VarChar(255)
-  roles_permission roles_permission[]
-  users_roles      users_roles[]
+model book {
+  id           Int       @id
+  booking_name String?   @db.VarChar(255)
+  booking_date DateTime? @db.DateTime(0)
+  user_id      Int?
+  userdata     userdata? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "book_ibfk_1")
+
+  @@index([user_id], map: "user_id")
 }
 
-model roles_permission {
-  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  role_id          String?           @db.Uuid
-  permission_id    String?           @db.Uuid
-  permission_lists permission_lists? @relation(fields: [permission_id], references: [permission_id], onDelete: NoAction, onUpdate: NoAction)
-  roles_lists      roles_lists?      @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+model districts {
+  id           Int            @id @default(autoincrement())
+  code         String         @db.VarChar(4)
+  name_th      String         @db.VarChar(150)
+  name_en      String         @db.VarChar(150)
+  province_id  Int            @default(0)
+  provinces    provinces      @relation(fields: [province_id], references: [id], onUpdate: Restrict, map: "districts_ibfk_1")
+  subdistricts subdistricts[]
+
+  @@index([province_id], map: "province_id")
 }
 
-model users {
-  user_id        String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  username       String?       @db.VarChar(255)
-  password       String?       @db.VarChar(255)
-  account_status String?       @db.VarChar(255)
-  google_iud     String?       @db.VarChar(255)
-  org_email      String?       @db.VarChar(255)
-  alt_email      String?       @db.VarChar(255)
+model geographies {
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(255)
+  provinces provinces[]
+}
+
+model node {
+  id            Int        @id @default(autoincrement())
+  location_name String?    @db.VarChar(255)
+  url           String?    @db.VarChar(255)
+  description   String?    @db.Text
+  alert         alert[]
+  queq          queq[]
+  userdata      userdata[]
+}
+
+model provinces {
+  id           Int         @id @default(autoincrement())
+  code         String      @db.VarChar(2)
+  name_th      String      @db.VarChar(150)
+  name_en      String      @db.VarChar(150)
+  geography_id Int         @default(0)
+  districts    districts[]
+  geographies  geographies @relation(fields: [geography_id], references: [id], onUpdate: Restrict, map: "provinces_ibfk_1")
+
+  @@index([geography_id], map: "geography_id")
+}
+
+model queq {
+  id                                     Int         @id @default(autoincrement())
+  node_id                                Int?
+  reserve_id                             Int?
+  date_time                              DateTime?   @db.DateTime(0)
+  queq_num                               Int?
+  status                                 Int?        @db.TinyInt
+  node                                   node?       @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "queq_ibfk_3")
+  reserve_id_queq_reserve_idToreserve_id reserve_id? @relation("queq_reserve_idToreserve_id", fields: [reserve_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "queq_ibfk_4")
+
+  @@index([node_id], map: "node_id")
+  @@index([reserve_id], map: "reserve_id")
+}
+
+model reserve_id {
+  id                               Int       @id @default(autoincrement())
+  user_id                          Int?
+  q1                               Int?      @db.TinyInt
+  q2                               Int?      @db.TinyInt
+  q3                               Int?      @db.TinyInt
+  q4                               Int?      @db.TinyInt
+  q5                               Int?      @db.TinyInt
+  q6                               Int?      @db.TinyInt
+  q7                               Int?      @db.TinyInt
+  q8                               Int?      @db.TinyInt
+  q9                               Int?      @db.TinyInt
+  q10                              Int?      @db.TinyInt
+  q11                              Int?      @db.TinyInt
+  q12                              Int?      @db.TinyInt
+  q13                              Int?      @db.TinyInt
+  q14                              Int?      @db.TinyInt
+  q15                              Int?      @db.TinyInt
+  q16                              Int?      @db.TinyInt
+  q17                              Int?      @db.TinyInt
+  q18                              Int?      @db.TinyInt
+  q19                              Int?      @db.TinyInt
+  q20                              Int?      @db.TinyInt
+  q21                              Int?      @db.TinyInt
+  q22                              Int?      @db.TinyInt
+  q23                              Int?      @db.TinyInt
+  q24                              Int?      @db.TinyInt
+  q25                              Int?      @db.TinyInt
+  q26                              Int?      @db.TinyInt
+  q27                              Int?      @db.TinyInt
+  q28                              Int?      @db.TinyInt
+  q29                              Int?      @db.TinyInt
+  q30                              Int?      @db.TinyInt
+  q31                              Int?      @db.TinyInt
+  q32                              Int?      @db.TinyInt
+  q33                              Int?      @db.TinyInt
+  q34                              Int?      @db.TinyInt
+  q35                              Int?      @db.TinyInt
+  q36                              Int?      @db.TinyInt
+  q37                              Int?      @db.TinyInt
+  q_5_detail                       String?   @db.VarChar(255)
+  q_7_detail                       String?   @db.VarChar(255)
+  created_at                       DateTime? @db.DateTime(0)
+  queq_queq_reserve_idToreserve_id queq[]    @relation("queq_reserve_idToreserve_id")
+  user                             user?     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "reserve_id_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model subdistricts {
+  id           Int        @id
+  zip_code     Int
+  name_th      String     @db.VarChar(150)
+  name_en      String     @db.VarChar(150)
+  districts_id Int        @default(0)
+  districts    districts  @relation(fields: [districts_id], references: [id], onUpdate: Restrict, map: "subdistricts_ibfk_1")
+  userdata     userdata[]
+
+  @@index([districts_id], map: "amphure_id")
+}
+
+model user {
+  id         Int          @id @default(autoincrement())
+  user_id    Int?
+  username   String?      @db.VarChar(255)
+  password   String?      @db.VarChar(255)
+  reserve_id reserve_id[]
+  userdata   userdata?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model userdata {
+  id             Int           @id @default(autoincrement())
+  czid           String?       @db.VarChar(30)
+  bdid           String?       @db.VarChar(30)
+  main_node      Int?
+  pname          String?       @db.VarChar(255)
   fname          String?       @db.VarChar(255)
+  mname          String?       @db.VarChar(255)
   sname          String?       @db.VarChar(255)
-  nickname       String?       @db.VarChar(255)
-  birthday       DateTime?     @db.Date
-  booking        booking[]
-  user_org       user_org?
-  users_roles    users_roles[]
-}
+  dob            DateTime?     @db.Date
+  weight         Float?
+  subdistrict_id Int?
+  sex            Int?          @db.TinyInt
+  addr           String?       @db.VarChar(255)
+  tel            String?       @db.VarChar(10)
+  mobile         String?       @db.VarChar(10)
+  email          String?       @db.VarChar(255)
+  occupation     String?       @db.VarChar(255)
+  old_pname      String?       @db.VarChar(255)
+  old_fname      String?       @db.VarChar(255)
+  old_sname      String?       @db.VarChar(255)
+  old_mname      String?       @db.VarChar(255)
+  img_profile    String?       @db.VarChar(255)
+  book           book[]
+  user           user[]
+  subdistricts   subdistricts? @relation(fields: [subdistrict_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userdata_ibfk_1")
+  node           node?         @relation(fields: [main_node], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userdata_ibfk_2")
 
-model users_roles {
-  id          String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  user_id     String?      @db.Uuid
-  role_id     String?      @db.Uuid
-  roles_lists roles_lists? @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
-  users       users?       @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model booking {
-  id              String           @id(map: "booking_pkey1") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  booking_id      String?          @db.Uuid
-  user_id         String?          @db.Uuid
-  booking_details booking_details? @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  ticket          ticket           @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users           users?           @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model booking_details {
-  id                                                      String        @id(map: "booking_pkey") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  booking                                                 String?       @db.VarChar(255)
-  time_start                                              DateTime?     @db.Date
-  time_end                                                DateTime?     @db.Date
-  booking_type                                            String?       @db.Uuid
-  area_id                                                 String?       @db.Uuid
-  bookings                                                booking[]
-  booking_type_booking_details_booking_typeTobooking_type booking_type? @relation("booking_details_booking_typeTobooking_type", fields: [booking_type], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model main_room {
-  id        String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  room_name String?    @db.VarChar(255)
-  sub_room  sub_room[]
-}
-
-model seat {
-  id       String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  seat     String? @db.VarChar(255)
-  table_id String? @db.Uuid
-  table    table?  @relation(fields: [table_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model sub_room {
-  id            String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  room_sub_name String?    @db.VarChar(255)
-  room_id       String?    @db.Uuid
-  main_room     main_room? @relation(fields: [room_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  table         table[]
-}
-
-model table {
-  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  table_name  String?   @db.VarChar(255)
-  sub_room_id String?   @db.Uuid
-  seat        seat[]
-  sub_room    sub_room? @relation(fields: [sub_room_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model booking_type {
-  id                                                         String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  booking_type_name                                          String?           @db.VarChar(255)
-  area_type                                                  Int?
-  minimum_amount                                             Int?
-  booking_details_booking_details_booking_typeTobooking_type booking_details[] @relation("booking_details_booking_typeTobooking_type")
-}
-
-model curriculum {
-  id                                       String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  curriculum                               String?    @db.VarChar(255)
-  major_id                                 String?    @db.Uuid
-  major                                    major?     @relation(fields: [major_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user_org_user_org_curriculumTocurriculum user_org[] @relation("user_org_curriculumTocurriculum")
-}
-
-model faculty {
-  id           String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  faculty_name String? @db.VarChar(255)
-  major        major[]
-}
-
-model major {
-  id         String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  major      String?      @db.VarChar(255)
-  faculty_id String?      @db.Uuid
-  curriculum curriculum[]
-  faculty    faculty?     @relation(fields: [faculty_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model ticket {
-  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  booking_id String?   @db.Uuid
-  created_at DateTime? @db.Timestamp(6)
-  expired_at DateTime? @db.Timestamp(6)
-  booking    booking?
-}
-
-model user_org {
-  user_id                                    String      @id @db.Uuid
-  year_id                                    Int?
-  curriculum                                 String?     @db.Uuid
-  curriculum_user_org_curriculumTocurriculum curriculum? @relation("user_org_curriculumTocurriculum", fields: [curriculum], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users                                      users       @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  @@index([main_node], map: "main_node")
+  @@index([subdistrict_id], map: "subdistrict_id")
 }

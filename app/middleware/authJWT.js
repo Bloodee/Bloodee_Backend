@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const config = require("../config/auth.config.js");
 
 verifyToken = (req, res, next) => {
   let token = req.headers["access-token"];
@@ -16,7 +17,6 @@ verifyToken = (req, res, next) => {
       });
     }
     req.user_id = decoded.id;
-    req.username = decoded.username;
     next();
   });
 };
