@@ -362,6 +362,7 @@ exports.SubdistrictGet = async (req, res) => {
             id: true,
             name_th: true,
             name_en: true,
+
         },
         where: {
             districts_id: parseInt(req.params.id)
@@ -392,3 +393,125 @@ exports.nodeGet = async (req, res) => {
         })
     }
 }
+
+exports.BookingUpdate = async (req, res) => {
+    console.log("test");
+    const {
+        node_id,
+        booking_date,
+    } = req.body;
+    const user_id = req.userdata_id;
+    console.log(user_id)
+    const check = await prisma.book.findMany({
+        where: {
+            user_id: user_id,
+        }
+    })
+    // check booking already exist use update booking
+    // if not exist use create booking
+    if (check.length > 0) {
+        const booking = await prisma.book.updateMany({
+            where: {
+                user_id: user_id,
+            },
+            data: {
+                node_id: node_id,
+                booking_date: booking_date,
+            }
+        })
+        if (!booking) {
+            return res.status(200).send({ status: false, message: "Booking update failed" });
+        }
+        else {
+            res.status(200).send({
+                status: true,
+                message: "Booking update success",
+            })
+        }
+    }
+    else {
+        const booking = await prisma.book.create({
+            data: {
+                user_id: user_id,
+                node_id: node_id,
+                booking_date: booking_date,
+                type: 0,
+            }
+        })
+        if (!booking) {
+            return res.status(200).send({ status: false, message: "Booking create failed" });
+        }
+        else {
+            res.status(200).send({
+                status: true,
+                message: "Booking create success",
+            })
+        }
+    }
+
+}
+
+exports.BookingGet = async (req, res) => {
+    const user_id = req.userdata_id;
+    const booking = await prisma.book.findMany({
+        select: {
+            node_id: true,
+            booking_date: true,
+            type: true,
+            node: {
+                select: {
+                    location_name: true,
+                }
+            }
+        },
+        where: {
+            user_id: user_id
+        }
+    })
+    if (!booking) {
+        return res.status(200).send({ status: false, message: "Booking not found" });
+    }
+    else {
+        res.status(200).send({
+            status: true,
+            message: "Booking found",
+            booking: booking
+        })
+    }
+}
+
+exports.healthchecklistAvaliability = async (req, res) => {
+    console.log("TEST");
+    const healthchecklists = await prisma.healthchecklists.findMany({
+        select: {
+            id: true,
+            healthcheck_name: true,
+            healthcheck_price: true,
+            user_healthcheck_selection: {
+                select: {
+                    user_id: true,
+                    healthchecklist_id: true,
+                }
+            }
+        },
+        where: {
+            user_healthcheck_selection: {
+                some: {
+                    user_id: parseInt(req.params.id)
+                }
+            }
+        }
+    })
+    if (!healthchecklists) {
+        return res.status(200).send({ status: false, message: "Healthchecklist not found" });
+    }
+    else {
+        res.status(200).send({
+            status: true,
+            message: "Healthchecklist found",
+            healthchecklists: healthchecklists
+
+        })
+    }
+}
+

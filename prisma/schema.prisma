@@ -7,23 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model alert {
-  id                Int     @id
-  alert_title       String? @map("alert title") @db.VarChar(255)
-  alert_description String? @map("alert description") @db.Text
-  node_id           Int?
-  node              node?   @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "alert_ibfk_1")
-
-  @@index([node_id], map: "node_id")
-}
-
 model book {
-  id           Int       @id
-  booking_name String?   @db.VarChar(255)
+  id           Int       @id @default(autoincrement())
   booking_date DateTime? @db.DateTime(0)
   user_id      Int?
+  node_id      Int?
+  type         Int?
   userdata     userdata? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "book_ibfk_1")
+  node         node?     @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "book_ibfk_2")
 
+  @@index([node_id], map: "node_id")
   @@index([user_id], map: "user_id")
 }
 
@@ -50,8 +43,7 @@ model node {
   location_name String?    @db.VarChar(255)
   url           String?    @db.VarChar(255)
   description   String?    @db.Text
-  alert         alert[]
-  queq          queq[]
+  book          book[]
   userdata      userdata[]
 }
 
@@ -67,65 +59,51 @@ model provinces {
   @@index([geography_id], map: "geography_id")
 }
 
-model queq {
-  id                                     Int         @id @default(autoincrement())
-  node_id                                Int?
-  reserve_id                             Int?
-  date_time                              DateTime?   @db.DateTime(0)
-  queq_num                               Int?
-  status                                 Int?        @db.TinyInt
-  node                                   node?       @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "queq_ibfk_3")
-  reserve_id_queq_reserve_idToreserve_id reserve_id? @relation("queq_reserve_idToreserve_id", fields: [reserve_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "queq_ibfk_4")
-
-  @@index([node_id], map: "node_id")
-  @@index([reserve_id], map: "reserve_id")
-}
-
 model reserve_id {
-  id                               Int       @id @default(autoincrement())
-  user_id                          Int?
-  q1                               Int?      @db.TinyInt
-  q2                               Int?      @db.TinyInt
-  q3                               Int?      @db.TinyInt
-  q4                               Int?      @db.TinyInt
-  q5                               Int?      @db.TinyInt
-  q6                               Int?      @db.TinyInt
-  q7                               Int?      @db.TinyInt
-  q8                               Int?      @db.TinyInt
-  q9                               Int?      @db.TinyInt
-  q10                              Int?      @db.TinyInt
-  q11                              Int?      @db.TinyInt
-  q12                              Int?      @db.TinyInt
-  q13                              Int?      @db.TinyInt
-  q14                              Int?      @db.TinyInt
-  q15                              Int?      @db.TinyInt
-  q16                              Int?      @db.TinyInt
-  q17                              Int?      @db.TinyInt
-  q18                              Int?      @db.TinyInt
-  q19                              Int?      @db.TinyInt
-  q20                              Int?      @db.TinyInt
-  q21                              Int?      @db.TinyInt
-  q22                              Int?      @db.TinyInt
-  q23                              Int?      @db.TinyInt
-  q24                              Int?      @db.TinyInt
-  q25                              Int?      @db.TinyInt
-  q26                              Int?      @db.TinyInt
-  q27                              Int?      @db.TinyInt
-  q28                              Int?      @db.TinyInt
-  q29                              Int?      @db.TinyInt
-  q30                              Int?      @db.TinyInt
-  q31                              Int?      @db.TinyInt
-  q32                              Int?      @db.TinyInt
-  q33                              Int?      @db.TinyInt
-  q34                              Int?      @db.TinyInt
-  q35                              Int?      @db.TinyInt
-  q36                              Int?      @db.TinyInt
-  q37                              Int?      @db.TinyInt
-  q_5_detail                       String?   @db.VarChar(255)
-  q_7_detail                       String?   @db.VarChar(255)
-  created_at                       DateTime? @db.DateTime(0)
-  queq_queq_reserve_idToreserve_id queq[]    @relation("queq_reserve_idToreserve_id")
-  user                             user?     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "reserve_id_ibfk_1")
+  id                                                                           Int                          @id @default(autoincrement())
+  user_id                                                                      Int?
+  q1                                                                           Int?                         @db.TinyInt
+  q2                                                                           Int?                         @db.TinyInt
+  q3                                                                           Int?                         @db.TinyInt
+  q4                                                                           Int?                         @db.TinyInt
+  q5                                                                           Int?                         @db.TinyInt
+  q6                                                                           Int?                         @db.TinyInt
+  q7                                                                           Int?                         @db.TinyInt
+  q8                                                                           Int?                         @db.TinyInt
+  q9                                                                           Int?                         @db.TinyInt
+  q10                                                                          Int?                         @db.TinyInt
+  q11                                                                          Int?                         @db.TinyInt
+  q12                                                                          Int?                         @db.TinyInt
+  q13                                                                          Int?                         @db.TinyInt
+  q14                                                                          Int?                         @db.TinyInt
+  q15                                                                          Int?                         @db.TinyInt
+  q16                                                                          Int?                         @db.TinyInt
+  q17                                                                          Int?                         @db.TinyInt
+  q18                                                                          Int?                         @db.TinyInt
+  q19                                                                          Int?                         @db.TinyInt
+  q20                                                                          Int?                         @db.TinyInt
+  q21                                                                          Int?                         @db.TinyInt
+  q22                                                                          Int?                         @db.TinyInt
+  q23                                                                          Int?                         @db.TinyInt
+  q24                                                                          Int?                         @db.TinyInt
+  q25                                                                          Int?                         @db.TinyInt
+  q26                                                                          Int?                         @db.TinyInt
+  q27                                                                          Int?                         @db.TinyInt
+  q28                                                                          Int?                         @db.TinyInt
+  q29                                                                          Int?                         @db.TinyInt
+  q30                                                                          Int?                         @db.TinyInt
+  q31                                                                          Int?                         @db.TinyInt
+  q32                                                                          Int?                         @db.TinyInt
+  q33                                                                          Int?                         @db.TinyInt
+  q34                                                                          Int?                         @db.TinyInt
+  q35                                                                          Int?                         @db.TinyInt
+  q36                                                                          Int?                         @db.TinyInt
+  q37                                                                          Int?                         @db.TinyInt
+  q_5_detail                                                                   String?                      @db.VarChar(255)
+  q_7_detail                                                                   String?                      @db.VarChar(255)
+  created_at                                                                   DateTime?                    @db.DateTime(0)
+  user                                                                         user?                        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "reserve_id_ibfk_1")
+  user_healthcheck_selection_user_healthcheck_selection_reserve_idToreserve_id user_healthcheck_selection[] @relation("user_healthcheck_selection_reserve_idToreserve_id")
 
   @@index([user_id], map: "user_id")
 }
@@ -154,33 +132,55 @@ model user {
 }
 
 model userdata {
-  id             Int           @id @default(autoincrement())
-  czid           String?       @db.VarChar(30)
-  bdid           String?       @db.VarChar(30)
-  main_node      Int?
-  pname          String?       @db.VarChar(255)
-  fname          String?       @db.VarChar(255)
-  mname          String?       @db.VarChar(255)
-  sname          String?       @db.VarChar(255)
-  dob            DateTime?     @db.Date
-  weight         Float?
-  subdistrict_id Int?
-  sex            Int?          @db.TinyInt
-  addr           String?       @db.VarChar(255)
-  tel            String?       @db.VarChar(10)
-  mobile         String?       @db.VarChar(10)
-  email          String?       @db.VarChar(255)
-  occupation     String?       @db.VarChar(255)
-  old_pname      String?       @db.VarChar(255)
-  old_fname      String?       @db.VarChar(255)
-  old_sname      String?       @db.VarChar(255)
-  old_mname      String?       @db.VarChar(255)
-  img_profile    String?       @db.VarChar(255)
-  book           book[]
-  user           user[]
-  subdistricts   subdistricts? @relation(fields: [subdistrict_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userdata_ibfk_1")
-  node           node?         @relation(fields: [main_node], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userdata_ibfk_2")
+  id                         Int                          @id @default(autoincrement())
+  czid                       String?                      @db.VarChar(30)
+  bdid                       String?                      @db.VarChar(30)
+  main_node                  Int?
+  pname                      String?                      @db.VarChar(255)
+  fname                      String?                      @db.VarChar(255)
+  mname                      String?                      @db.VarChar(255)
+  sname                      String?                      @db.VarChar(255)
+  dob                        DateTime?                    @db.Date
+  weight                     Float?
+  subdistrict_id             Int?
+  sex                        Int?                         @db.TinyInt
+  addr                       String?                      @db.VarChar(255)
+  tel                        String?                      @db.VarChar(10)
+  mobile                     String?                      @db.VarChar(10)
+  email                      String?                      @db.VarChar(255)
+  occupation                 String?                      @db.VarChar(255)
+  old_pname                  String?                      @db.VarChar(255)
+  old_fname                  String?                      @db.VarChar(255)
+  old_sname                  String?                      @db.VarChar(255)
+  old_mname                  String?                      @db.VarChar(255)
+  img_profile                String?                      @db.VarChar(255)
+  book                       book[]
+  user                       user[]
+  user_healthcheck_selection user_healthcheck_selection[]
+  subdistricts               subdistricts?                @relation(fields: [subdistrict_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userdata_ibfk_1")
+  node                       node?                        @relation(fields: [main_node], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "userdata_ibfk_2")
 
   @@index([main_node], map: "main_node")
   @@index([subdistrict_id], map: "subdistrict_id")
+}
+
+model healthchecklists {
+  id                         Int                          @id @default(autoincrement())
+  healthcheck_name           String?                      @db.VarChar(255)
+  healthcheck_price          Decimal?                     @db.Decimal(10, 2)
+  user_healthcheck_selection user_healthcheck_selection[]
+}
+
+model user_healthcheck_selection {
+  id                                                           Int               @id @default(autoincrement())
+  user_id                                                      Int?
+  lab_select                                                   Int?
+  reserve_id                                                   Int?
+  userdata                                                     userdata?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_healthcheck_selection_ibfk_1")
+  reserve_id_user_healthcheck_selection_reserve_idToreserve_id reserve_id?       @relation("user_healthcheck_selection_reserve_idToreserve_id", fields: [reserve_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_healthcheck_selection_ibfk_2")
+  healthchecklists                                             healthchecklists? @relation(fields: [lab_select], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_healthcheck_selection_ibfk_3")
+
+  @@index([lab_select], map: "lab_select")
+  @@index([reserve_id], map: "reserve_id")
+  @@index([user_id], map: "user_id")
 }

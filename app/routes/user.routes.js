@@ -16,5 +16,7 @@ module.exports = function (app) {
     app.get("/api/subdistrict/get/:id", controller.SubdistrictGet);
     app.get('/api/node/get', controller.nodeGet);
     app.post("/api/reserve/create", [authJwt.verifyToken], controller.reserveCreate);
-    
+    app.get('/api/book/get', [authJwt.verifyToken], controller.BookingGet);
+    app.post('/api/book/update', [authJwt.verifyToken], controller.BookingUpdate);
+    app.get('/api/healthchecklist/avaliability/get', /* [authJwt.verifyToken] ,*/ controller.healthchecklistAvaliability);
 }
